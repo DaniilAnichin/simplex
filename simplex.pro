@@ -4,8 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.c \
-    my_conio.c \
-    old_main.c
+    my_conio.c
 
 HEADERS += \
     solver.h \
