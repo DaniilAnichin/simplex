@@ -57,8 +57,10 @@ short findColumn(struct functionData system);
 short findRow(struct functionData system, short column);
 short iterate(struct functionData system, short column, short row);
 
-struct functionData inputFunction();
 void printError(int number);
+struct functionData inputFunction();
+void freeFunction(struct functionData data);
+
 short solve(struct functionData system);
 
 #endif // SOLVER_H

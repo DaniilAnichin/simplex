@@ -94,8 +94,124 @@ short findRow(struct functionData system, short column){
 }
 
 short iterate(struct functionData system, short column, short row){
-    ;
+//void generatePlane(struct count_data countData, struct data beginData)
+//    int i, j, it_num = 0;
+//    double A, B;
+//    double tmp;
+//    double *tmp_bv, *tmp_istr, **tmp_sv;
+
+//    while (!validPlane(countData,beginData) && undefiendFunction(countData,beginData))
+//    {
+//        A = countData.bv[countData.i_lrow][1];                                              //вычисление А и Б прямоугольника
+//        B = countData.istr[countData.i_lcol];
+
+//        countData.func -= A * B / countData.alm;                                            //вычисление функции
+
+//        tmp_bv=(double*)calloc(beginData.num_l,sizeof(double));                             //для формирования нового плана введём временный массив
+
+//        countData.bv [countData.i_lrow][0] = countData.i_lcol;
+//        A = countData.bv[countData.i_lrow][1];
+
+//        for (i = 0; i < beginData.num_l; i++)
+//        {
+//            B = countData.sv[i][countData.i_lcol];
+//            tmp_bv[i] = countData.bv[countData.i_lrow][1];
+
+//            if (i != countData.i_lrow)                                                       //вычисление плана по методу прямоугольника
+//                tmp_bv[i] = countData.bv[i][1] - A * B / countData.alm;
+//            else
+//                tmp_bv[i] /= countData.alm;
+//        }
+
+//        for (i = 0; i < beginData.num_l; i++)
+//            countData.bv[i][1] = tmp_bv[i];
+
+//        tmp_istr = countData.istr;                                                      //для новой индексной строки - нужно ввести ввременную строку
+//        B = countData.istr[countData.i_lcol];
+
+//        for (i = 0; i < beginData.num_v * 2; i++)
+//        {
+//            A = countData.sv[countData.i_lrow][i];
+//            tmp_istr[i] = countData.istr[i] - A * B / countData.alm;                           //вычисление новой индексной строки
+//        }
+
+//        countData.istr = tmp_istr;                                                             //новая индексная строка
+
+//        tmp_sv = (double**)calloc(beginData.num_l,sizeof(double));
+//        for (i = 0; i < beginData.num_l; i++)
+//            tmp_sv[i] = (double*)calloc(beginData.num_v*2,sizeof(double));
+
+//        for (i = 0; i < beginData.num_l; i++)                                                  //пересчёт симплекс таблицы
+//            for (j = 0; j < beginData.num_v * 2; j++)
+//            {
+//                tmp_sv[i][j] = countData.sv[i][j];
+
+//                A = countData.sv[countData.i_lrow][j];
+//                B = countData.sv[i][countData.i_lcol];
+
+//                if (i == countData.i_lrow)
+//                    tmp_sv[i][j] /= countData.alm;
+//                else
+//                    tmp_sv[i][j] = countData.sv[i][j] - A * B / countData.alm;
+//            }
+
+//        countData.sv = tmp_sv;
+//        countData.i_lcol = 0;
+//        tmp=countData.istr[0];
+//        for (i = 0; i < beginData.num_v * 2-1; i++) {                   //максимальное по модулю отриц. число в индексной строке
+//            if (countData.istr[i] < 0)
+//            {
+//                if (fabs(countData.istr[i + 1]) > fabs(tmp))
+//                {
+//                    tmp=countData.istr[i + 1];
+//                    countData.i_lcol = i + 1;
+//                }
+
+
+//            }
+//        }
+
+
+//        for (i = 0; i < beginData.num_l; i++)
+//            countData.th[i] = countData.bv[i][1] / countData.sv[i][countData.i_lcol];        //вычисление массива th
+
+//        countData.i_lrow = 0;
+
+//        for (i = 0; i < beginData.num_l -1; i++)                                             //вычисление разрешающей строки
+//            if (countData.th[i] > countData.th[i + 1])
+//                countData.i_lrow = i + 1;
+
+//        countData.alm = countData.sv[countData.i_lrow][countData.i_lcol];                    //вычисление разешающего элемента
+//        it_num++;                                                                            //итерация
+//    }
+
+//    if (!undefiendFunction(countData,beginData))                                             //проверка плана
+//        printf("\nResolve is no, because function isn't limitation.\n");
+//    else {
+//        printf("\nF(x)=%lf\n",countData.func);                                               //вывод результата
+//        printf("\nBasis:");
+//        for (i = 0; i < beginData.num_l; i++) {
+//            printf("\nx%.0lf=%.2lf",countData.bv[i][0] + 1,countData.bv[i][1]);
+//        }
+//    }
+//    printf("\n\n");
+
+
+//    free(tmp_bv);                                                                            //очищение памяти после работы с ней
+//    free(tmp_istr);
+//    free(countData.istr);
+//    free(countData.th);
+//    for(i=0;i<beginData.num_l;i++)
+//    {
+//        free(countData.sv[i]);
+//        free(countData.bv[i]);
+//    }
+//    free(countData.sv);
+//    free(countData.bv);
+    return 0;
 }
+
+
 
 struct functionData inputFunction(){
     int i = 0, j = 0, valid = 0;
@@ -106,15 +222,15 @@ struct functionData inputFunction(){
         if(getchar() != '\n')
         {
             fflush(stdin);
-            error(ERROR);
+            printError(ERROR);
         }
         else if(userData.nLimitations < 2)
         {
-            error(LLIMS);
+            printError(LLIMS);
         }
         else if(userData.nLimitations > 10)
         {
-            error(MLIMS);
+            printError(MLIMS);
         }
         else
         {
@@ -129,15 +245,15 @@ struct functionData inputFunction(){
         if(getchar()!='\n')
         {
             fflush(stdin);
-            error(ERROR);
+            printError(ERROR);
         }
         else if(userData.nVariables < 2)
         {
-            error(LVARS);
+            printError(LVARS);
         }
         else if(userData.nVariables > 10)
         {
-            error(MVARS);
+            printError(MVARS);
         }
         else{
             valid=1;
@@ -147,7 +263,7 @@ struct functionData inputFunction(){
     userData.nMaxVariables = userData.nLimitations * 2 + userData.nVariables;
 
     userData.function = (double*)calloc(userData.nMaxVariables, sizeof(double));
-    userData.direction = (int*)calloc(userData.nLimitations, sizeof(int));
+    userData.limitationSigns = (int*)calloc(userData.nLimitations, sizeof(int));
     userData.freeMembers = (double*)calloc(userData.nLimitations + 1, sizeof(double));
     userData.basisIds = (int*)calloc(userData.nLimitations, sizeof(int));
     userData.system = (double**)calloc(userData.nLimitations + 1, sizeof(double*));
@@ -163,7 +279,7 @@ struct functionData inputFunction(){
             if(getchar() != '\n' || fabs(userData.function[i]) >= 100000)
             {
                 fflush(stdin);
-                error(ERROR);
+                printError(ERROR);
             }
             else
             {
@@ -179,7 +295,7 @@ struct functionData inputFunction(){
                                userData.direction != MAXIM))
         {
             fflush(stdin);
-            error(ERROR);
+            printError(ERROR);
         }
         else
         {
@@ -202,7 +318,7 @@ struct functionData inputFunction(){
                 if(getchar() != '\n' || fabs(userData.system[i][j]) >= 100000)
                 {
                     fflush(stdin);
-                    error(ERROR);
+                    printError(ERROR);
                 }
                 else
                 {
@@ -213,14 +329,14 @@ struct functionData inputFunction(){
 
         valid = 0;
         do{
-            printf("Enter the %d limitation sign(<= - 0, < - 1, = - 2, > - 3, >= - 4): ",
+            printf("Enter the %d limitation sign(<= - %d, < - %d, = - %d, > - %d, >= - %d): ",
                    i + 1, LSEQ, LS, EQ, GR, GREQ);
             scanf("%d", &userData.limitationSigns[i]);
             if(getchar()!='\n' || userData.limitationSigns[i] < LSEQ
                     || userData.limitationSigns[i] > GREQ)
             {
                 fflush(stdin);
-                error(ERROR);
+                printError(ERROR);
             }
             else
             {
@@ -235,7 +351,7 @@ struct functionData inputFunction(){
             if(getchar() != '\n' || fabs(userData.freeMembers[i]) >= 100000)
             {
                 fflush(stdin);
-                error(ERROR);
+                printError(ERROR);
             }
             else
             {
@@ -246,7 +362,7 @@ struct functionData inputFunction(){
     return userData;
 }
 
-void error(int err_number)
+void printError(int err_number)
 {
     printf("Error: ");
     switch(err_number){
@@ -271,7 +387,18 @@ void error(int err_number)
     }
 }
 
+void freeFunction(struct functionData data){
+    int i;
+    for(i = 0; i < data.nLimitations + 1; ++i)
+        free(data.system[i]);
+    free(data.system);
+    free(data.function);
+    free(data.basisIds);
+    free(data.limitationSigns);
+    free(data.freeMembers);
+}
+
 short solve(struct functionData system){
-    ;
+    return 0;
 }
 
