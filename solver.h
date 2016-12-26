@@ -32,22 +32,11 @@ struct functionData{
     int nFullVars;
     int nLimitations;
     int direction;
-    int *basisIds;
-    int *limitationSigns;
-    double **system;
-    double *function;
-    double *freeMembers;
-};
-
-struct simplexData{
-    double optimValue;               //значение целевой функции
-    double **basisValues;               //значения базисных переменных задачи
-    double **sv;               //коэффициенты при переменных задачи
-    double *istr;              //индексная строка
-    double *th;                //последний столбец симплексной таблицы
-    double alm;                //разрешающий элемент, находящийся на пересечении ведущего столбца и ведущей строки
-    int i_lrow;                //индекс ведущей строки текущего плана.
-    int i_lcol;                //индекс ведущего столбца текущего плана
+    int* basisIds;
+    int* limitationSigns;
+    double* function;
+    double* freeMembers;
+    double** system;
 };
 
 void canonize(struct functionData system);

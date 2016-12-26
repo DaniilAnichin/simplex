@@ -1,8 +1,8 @@
 #include "solver.h"
 
 void canonize(struct functionData system){
-    int i = 0, j = 0, nextVar = system.nVariables;
-
+    int i = 0, j = 0;
+    int nextVar = system.nVariables;
 
     for(i = 0; i < system.nLimitations; ++i)
     {
@@ -77,137 +77,43 @@ short findColumn(struct functionData system){
 
 short findRow(struct functionData system, short column){
     int i = 0;
-    int sign = system.direction == MINIM ? -1 : 1;
-    int row = 0;
+    int row = -1;
     double value = 0;
     double newValue = 0;
 
-    for (i = 0; i < system.nFullVars; ++i)
-        newValue = system.system[system.nLimitations][i] * sign;
-        if(newValue > value)
+    for (i = 0; i < system.nLimitations; ++i)
+        if(system.system[i][column] > 0)
         {
-            value = newValue;
-            row = i;
+            newValue = system.system[i][column] / system.freeMembers[i];
+            if(newValue > value)
+            {
+                value = newValue;
+                row = i;
+            }
         }
 
     return row;
 }
 
 short iterate(struct functionData system, short column, short row){
-//void generatePlane(struct count_data countData, struct data beginData)
-//    int i, j, it_num = 0;
-//    double A, B;
-//    double tmp;
-//    double *tmp_bv, *tmp_istr, **tmp_sv;
+    int i, j;
+    double** sys = system.system;
+    double center = sys[row][column];
 
-//    while (!validPlane(countData,beginData) && undefiendFunction(countData,beginData))
-//    {
-//        A = countData.bv[countData.i_lrow][1];                                              //вычисление А и Б прямоугольника
-//        B = countData.istr[countData.i_lcol];
+    // New basis line
+    system.freeMembers[row] /= center;
+    for(j = 0; j < system.nFullVars; ++j)
+    {
+        sys[row][j] /= center;
+    }
 
-//        countData.func -= A * B / countData.alm;                                            //вычисление функции
+    // New system
+    for(i = 0; i < system.nLimitations; ++i)
+        if(i != row)
+            for(j = 0; j < system.nFullVars; ++j)
+                sys[i][j] -= sys[i][column] * sys[row][j] / center;
 
-//        tmp_bv=(double*)calloc(beginData.num_l,sizeof(double));                             //для формирования нового плана введём временный массив
-
-//        countData.bv [countData.i_lrow][0] = countData.i_lcol;
-//        A = countData.bv[countData.i_lrow][1];
-
-//        for (i = 0; i < beginData.num_l; i++)
-//        {
-//            B = countData.sv[i][countData.i_lcol];
-//            tmp_bv[i] = countData.bv[countData.i_lrow][1];
-
-//            if (i != countData.i_lrow)                                                       //вычисление плана по методу прямоугольника
-//                tmp_bv[i] = countData.bv[i][1] - A * B / countData.alm;
-//            else
-//                tmp_bv[i] /= countData.alm;
-//        }
-
-//        for (i = 0; i < beginData.num_l; i++)
-//            countData.bv[i][1] = tmp_bv[i];
-
-//        tmp_istr = countData.istr;                                                      //для новой индексной строки - нужно ввести ввременную строку
-//        B = countData.istr[countData.i_lcol];
-
-//        for (i = 0; i < beginData.num_v * 2; i++)
-//        {
-//            A = countData.sv[countData.i_lrow][i];
-//            tmp_istr[i] = countData.istr[i] - A * B / countData.alm;                           //вычисление новой индексной строки
-//        }
-
-//        countData.istr = tmp_istr;                                                             //новая индексная строка
-
-//        tmp_sv = (double**)calloc(beginData.num_l,sizeof(double));
-//        for (i = 0; i < beginData.num_l; i++)
-//            tmp_sv[i] = (double*)calloc(beginData.num_v*2,sizeof(double));
-
-//        for (i = 0; i < beginData.num_l; i++)                                                  //пересчёт симплекс таблицы
-//            for (j = 0; j < beginData.num_v * 2; j++)
-//            {
-//                tmp_sv[i][j] = countData.sv[i][j];
-
-//                A = countData.sv[countData.i_lrow][j];
-//                B = countData.sv[i][countData.i_lcol];
-
-//                if (i == countData.i_lrow)
-//                    tmp_sv[i][j] /= countData.alm;
-//                else
-//                    tmp_sv[i][j] = countData.sv[i][j] - A * B / countData.alm;
-//            }
-
-//        countData.sv = tmp_sv;
-//        countData.i_lcol = 0;
-//        tmp=countData.istr[0];
-//        for (i = 0; i < beginData.num_v * 2-1; i++) {                   //максимальное по модулю отриц. число в индексной строке
-//            if (countData.istr[i] < 0)
-//            {
-//                if (fabs(countData.istr[i + 1]) > fabs(tmp))
-//                {
-//                    tmp=countData.istr[i + 1];
-//                    countData.i_lcol = i + 1;
-//                }
-
-
-//            }
-//        }
-
-
-//        for (i = 0; i < beginData.num_l; i++)
-//            countData.th[i] = countData.bv[i][1] / countData.sv[i][countData.i_lcol];        //вычисление массива th
-
-//        countData.i_lrow = 0;
-
-//        for (i = 0; i < beginData.num_l -1; i++)                                             //вычисление разрешающей строки
-//            if (countData.th[i] > countData.th[i + 1])
-//                countData.i_lrow = i + 1;
-
-//        countData.alm = countData.sv[countData.i_lrow][countData.i_lcol];                    //вычисление разешающего элемента
-//        it_num++;                                                                            //итерация
-//    }
-
-//    if (!undefiendFunction(countData,beginData))                                             //проверка плана
-//        printf("\nResolve is no, because function isn't limitation.\n");
-//    else {
-//        printf("\nF(x)=%lf\n",countData.func);                                               //вывод результата
-//        printf("\nBasis:");
-//        for (i = 0; i < beginData.num_l; i++) {
-//            printf("\nx%.0lf=%.2lf",countData.bv[i][0] + 1,countData.bv[i][1]);
-//        }
-//    }
-//    printf("\n\n");
-
-
-//    free(tmp_bv);                                                                            //очищение памяти после работы с ней
-//    free(tmp_istr);
-//    free(countData.istr);
-//    free(countData.th);
-//    for(i=0;i<beginData.num_l;i++)
-//    {
-//        free(countData.sv[i]);
-//        free(countData.bv[i]);
-//    }
-//    free(countData.sv);
-//    free(countData.bv);
+    system.basisIds[row] = column;
     return 0;
 }
 
@@ -217,7 +123,7 @@ struct functionData inputFunction(){
     int i = 0, j = 0, valid = 0;
     struct functionData userData;
     do{
-        printf("Enter limitations number: \n");
+        printf("Enter limitations number: ");
         scanf("%d", &userData.nLimitations);
         if(getchar() != '\n')
         {
@@ -240,7 +146,7 @@ struct functionData inputFunction(){
 
     valid = 0;
     do{
-        printf("Enter variables number: \n");
+        printf("Enter variables number: ");
         scanf("%d", &userData.nVariables);
         if(getchar()!='\n')
         {
@@ -399,6 +305,22 @@ void freeFunction(struct functionData data){
 }
 
 short solve(struct functionData system){
+    int column =0, row = 0, result = 0;
+    canonize(system);
+    while(!optimal(system)){
+        column = findColumn(system);
+        row = findRow(system, column);
+
+        if(row == -1)
+        {
+            printError(UNLIM);
+            return -1;
+        }
+        result = iterate(system, column, row);
+    }
+    printf("Optimal result is %lf; \n", system.freeMembers[system.nLimitations]);
+    freeFunction(system);
+
     return 0;
 }
 
