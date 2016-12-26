@@ -1,58 +1,59 @@
 #include "solver.h"
 
-void canonize(struct functionData system){
+void canonize(struct functionData *system){
     int i = 0, j = 0;
-    int nextVar = system.nVariables;
+    int nextVar = system->nVariables;
 
-    for(i = 0; i < system.nLimitations; ++i)
+    for(i = 0; i < system->nLimitations; ++i)
     {
-        switch(system.limitationSigns[i]){
+        switch(system->limitationSigns[i]){
         case LS:
-            system.limitationSigns[i] = LSEQ;
-            system.freeMembers[i] -= 10e-10;
+            system->limitationSigns[i] = LSEQ;
+            system->freeMembers[i] -= 10e-10;
         case LSEQ:
-            system.system[i][nextVar] = 1;
-            system.basisIds[i] = nextVar;
+            system->system[i][nextVar] = 1;
+            system->basisIds[i] = nextVar;
             nextVar += 1;
             break;
         case EQ:
-            system.system[i][nextVar] = 1;
-            system.function[nextVar] = (system.direction == MINIM) ? M : -M;
-            system.basisIds[i] = nextVar;
+            system->system[i][nextVar] = 1;
+            system->function[nextVar] = (system->direction == MINIM) ? M : -M;
+            system->basisIds[i] = nextVar;
             nextVar += 1;
             break;
         case GR:
-            system.limitationSigns[i] = GREQ;
-            system.freeMembers[i] += 10e-10;
+            system->limitationSigns[i] = GREQ;
+            system->freeMembers[i] += 10e-10;
         case GREQ:
-            system.system[i][nextVar] = -1;
+            system->system[i][nextVar] = -1;
             nextVar += 1;
-            system.system[i][nextVar] = 1;
-            system.basisIds[i] = nextVar;
-            system.function[nextVar] = (system.direction == MINIM) ? M : -M;
+            system->system[i][nextVar] = 1;
+            system->basisIds[i] = nextVar;
+            system->function[nextVar] = (system->direction == MINIM) ? M : -M;
+            nextVar += 1;
             break;
         }
     }
-    system.nFullVars = nextVar;
+    system->nFullVars = nextVar;
 
-    for(i = 0; i < system.nFullVars; ++i)
+    for(i = 0; i < system->nFullVars; ++i)
     {
-        system.system[system.nLimitations][i] = -system.function[i];
-        for(j = 0; j < system.nLimitations; ++j)
-            system.system[system.nLimitations][i] +=
-                    system.function[system.basisIds[j]] * system.system[j][i];
+        system->system[system->nLimitations][i] = -system->function[i];
+        for(j = 0; j < system->nLimitations; ++j)
+            system->system[system->nLimitations][i] +=
+                    system->function[system->basisIds[j]] * system->system[j][i];
     }
 
-    for(j = 0; j < system.nLimitations; ++j)
-        system.freeMembers[system.nLimitations] +=
-                system.function[system.basisIds[j]] * system.freeMembers[j];
+    for(j = 0; j < system->nLimitations; ++j)
+        system->freeMembers[system->nLimitations] +=
+                system->function[system->basisIds[j]] * system->freeMembers[j];
 }
 
 short optimal(struct functionData system){
     int i = 0;
     int sign = system.direction == MINIM ? -1 : 1;
     for (i = 0; i < system.nFullVars; ++i)
-        if(system.system[system.nLimitations][i] * sign > 0)
+        if(system.system[system.nLimitations][i] * sign < 0)
             return 0;
     return 1;
 }
@@ -60,17 +61,19 @@ short optimal(struct functionData system){
 short findColumn(struct functionData system){
     int i = 0;
     int sign = system.direction == MINIM ? -1 : 1;
-    short column = 0;
+    short column = -1;
     double value = 0;
     double newValue = 0;
 
     for (i = 0; i < system.nFullVars; ++i)
+    {
         newValue = system.system[system.nLimitations][i] * sign;
-        if(newValue > value)
+        if(newValue < value)
         {
             value = newValue;
             column = i;
         }
+    }
 
     return column;
 }
@@ -95,25 +98,30 @@ short findRow(struct functionData system, short column){
     return row;
 }
 
-short iterate(struct functionData system, short column, short row){
+short iterate(struct functionData *system, short column, short row){
     int i, j;
-    double** sys = system.system;
+    double** sys = system->system;
     double center = sys[row][column];
+    double tmp = 0;
 
     // New basis line
-    system.freeMembers[row] /= center;
-    for(j = 0; j < system.nFullVars; ++j)
+    system->freeMembers[row] /= center;
+    for(j = 0; j < system->nFullVars; ++j)
     {
         sys[row][j] /= center;
     }
 
     // New system
-    for(i = 0; i < system.nLimitations; ++i)
+    for(i = 0; i < system->nLimitations + 1; ++i)
         if(i != row)
-            for(j = 0; j < system.nFullVars; ++j)
-                sys[i][j] -= sys[i][column] * sys[row][j] / center;
+        {
+            tmp = sys[i][column];
+            system->freeMembers[i] -= tmp * system->freeMembers[row];
+            for(j = 0; j < system->nFullVars; ++j)
+                sys[i][j] -= tmp * sys[row][j];
+        }
 
-    system.basisIds[row] = column;
+    system->basisIds[row] = column;
     return 0;
 }
 
@@ -305,10 +313,16 @@ void freeFunction(struct functionData data){
 }
 
 short solve(struct functionData system){
-    int column =0, row = 0, result = 0;
-    canonize(system);
+    int column = 0, row = 0, result = 0;
+    canonize(&system);
     while(!optimal(system)){
         column = findColumn(system);
+        if(column == -1)
+        {
+            printError(ERROR);
+            return -1;
+        }
+
         row = findRow(system, column);
 
         if(row == -1)
@@ -316,7 +330,7 @@ short solve(struct functionData system){
             printError(UNLIM);
             return -1;
         }
-        result = iterate(system, column, row);
+        result = iterate(&system, column, row);
     }
     printf("Optimal result is %lf; \n", system.freeMembers[system.nLimitations]);
     freeFunction(system);

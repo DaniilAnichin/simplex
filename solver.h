@@ -39,12 +39,12 @@ struct functionData{
     double** system;
 };
 
-void canonize(struct functionData system);
+void canonize(struct functionData *system);
 short optimal(struct functionData system);
 
 short findColumn(struct functionData system);
 short findRow(struct functionData system, short column);
-short iterate(struct functionData system, short column, short row);
+short iterate(struct functionData *system, short column, short row);
 
 void printError(int number);
 struct functionData inputFunction();
