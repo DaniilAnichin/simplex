@@ -125,7 +125,73 @@ short iterate(struct functionData *system, short column, short row){
     return 0;
 }
 
+void freeFunction(struct functionData data){
+    int i;
+    for(i = 0; i < data.nLimitations + 1; ++i)
+        free(data.system[i]);
+    free(data.system);
+    free(data.function);
+    free(data.basisIds);
+    free(data.limitationSigns);
+    free(data.freeMembers);
+}
 
+short solve(struct functionData system){
+    int column = 0, row = 0;
+    canonize(&system);
+    while(!optimal(system)){
+        column = findColumn(system);
+        if(column == -1)
+        {
+            printError(ERROR);
+            return -1;
+        }
+
+        row = findRow(system, column);
+
+        if(row == -1)
+        {
+            printError(UNLIM);
+            return -1;
+        }
+        iterate(&system, column, row);
+    }
+    printf("Optimal result is %lf; \n", system.freeMembers[system.nLimitations]);
+    double* results = (double*)calloc(system.nVariables, sizeof(double));
+    for (int i = 0; i < system.nLimitations + 1; ++i)
+        if (system.basisIds[i] < system.nVariables)
+            results[system.basisIds[i]] = system.freeMembers[i];
+    for (int i = 0; i < system.nVariables + 1; ++i)
+        printf("x%d: %lf\n", i + 1, results[i]);
+    freeFunction(system);
+
+    return 0;
+}
+
+void printError(int err_number)
+{
+    printf("Error: ");
+    switch(err_number){
+    case ERROR:
+        printf("Incorrect value entered\n");
+        break;
+    case LLIMS:
+        printf("Not enough limitations\n");
+        break;
+    case MLIMS:
+        printf("Too many limitations\n");
+        break;
+    case LVARS:
+        printf("Not enough variables\n");
+        break;
+    case MVARS:
+        printf("Too many variables\n");
+        break;
+    case UNLIM:
+        printf("Function unlimited\n");
+        break;
+    }
+}
 
 struct functionData inputFunction(){
     int i = 0, j = 0, valid = 0;
@@ -275,66 +341,3 @@ struct functionData inputFunction(){
     }
     return userData;
 }
-
-void printError(int err_number)
-{
-    printf("Error: ");
-    switch(err_number){
-    case ERROR:
-        printf("Incorrect value entered\n");
-        break;
-    case LLIMS:
-        printf("Not enough limitations\n");
-        break;
-    case MLIMS:
-        printf("Too many limitations\n");
-        break;
-    case LVARS:
-        printf("Not enough variables\n");
-        break;
-    case MVARS:
-        printf("Too many variables\n");
-        break;
-    case UNLIM:
-        printf("Function unlimited\n");
-        break;
-    }
-}
-
-void freeFunction(struct functionData data){
-    int i;
-    for(i = 0; i < data.nLimitations + 1; ++i)
-        free(data.system[i]);
-    free(data.system);
-    free(data.function);
-    free(data.basisIds);
-    free(data.limitationSigns);
-    free(data.freeMembers);
-}
-
-short solve(struct functionData system){
-    int column = 0, row = 0, result = 0;
-    canonize(&system);
-    while(!optimal(system)){
-        column = findColumn(system);
-        if(column == -1)
-        {
-            printError(ERROR);
-            return -1;
-        }
-
-        row = findRow(system, column);
-
-        if(row == -1)
-        {
-            printError(UNLIM);
-            return -1;
-        }
-        result = iterate(&system, column, row);
-    }
-    printf("Optimal result is %lf; \n", system.freeMembers[system.nLimitations]);
-    freeFunction(system);
-
-    return 0;
-}
-
